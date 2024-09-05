@@ -18,8 +18,8 @@ import Loader from "@/components/loader";
 export default function GameBoard() {
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [deckStatus, setDeckStatus] = useState<DeckProps>();
-  const [playerCards, setPlayerCards] = useState<CardProps[]>();
-  const [computerCards, setComputerCards] = useState<CardProps[]>();
+  const [playerCards, setPlayerCards] = useState<CardProps[]>([]);
+  const [computerCards, setComputerCards] = useState<CardProps[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -28,19 +28,26 @@ export default function GameBoard() {
     try {
       if (!deckStatus?.deck_id) return;
 
-      const response = await DeckRepositorie.drawCard(deckStatus.deck_id, 2);
+      await DeckRepositorie.reshuffleCards(deckStatus.deck_id);
+
+      const response = await DeckRepositorie.drawCard(deckStatus.deck_id, 4);
 
       const cardsDrawed: CardProps[] = response.cards;
 
-      setPlayerCards(cardsDrawed);
+      setPlayerCards(cardsDrawed.slice(0, 2));
+      setComputerCards(cardsDrawed.slice(2, 4));
 
       await DeckRepositorie.addToPile(
         deckStatus.deck_id,
         "player",
-        cardsDrawed.map((card) => card.code)
+        cardsDrawed.slice(0, 2).map((card) => card.code)
       );
 
-      await DeckRepositorie.listCardsInPile(deckStatus.deck_id, "player");
+      await DeckRepositorie.addToPile(
+        deckStatus.deck_id,
+        "computer",
+        cardsDrawed.slice(2, 4).map((card) => card.code)
+      );
 
       const status = await DeckRepositorie.deckStatus(deckStatus.deck_id);
       setDeckStatus(status);
@@ -131,7 +138,7 @@ export default function GameBoard() {
               </div>
             </div>
           </section>
-          <section className="flex justify-center items-center p-4 h-full w-full">
+          <section className="flex flex-col justify-center items-center p-4 h-full w-full">
             <Button
               leftIcon={<CiPlay1 />}
               variant="secondary"
@@ -143,6 +150,8 @@ export default function GameBoard() {
               deckId={deckStatus?.deck_id}
               playerCards={playerCards}
               computerCards={computerCards}
+              setPlayerCards={setPlayerCards}
+              setComputerCards={setComputerCards}
             />
           </section>
         </>

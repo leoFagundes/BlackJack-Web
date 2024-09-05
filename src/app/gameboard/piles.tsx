@@ -1,5 +1,6 @@
 "use client";
 
+import Card from "@/components/card";
 import { DeckProps } from "@/types/types";
 import Image from "next/image";
 import { useState } from "react";
@@ -14,38 +15,18 @@ export default function Piles({ deckStatus }: PilesProps) {
 
   return (
     <div className="flex justify-around gap-4">
-      <figure className="flex flex-col gap-1 items-center">
-        <figcaption className="text-xl">Deck</figcaption>
-        <Image
-          width={180}
-          height={0}
-          src="https://deckofcardsapi.com/static/img/back.png"
-          alt="card-back"
-        />
-        <figcaption className="self-start">
-          {deckStatus?.remaining} cards
-        </figcaption>
-      </figure>
-      <figure className="flex flex-col gap-1 items-center">
-        <figcaption className="text-xl">Discard</figcaption>
-        {discardPile.length > 0 ? (
-          <Image
-            width={180}
-            height={0}
-            src={`https://deckofcardsapi.com/static/img/${discardPile.at(
-              -1
-            )}.png`}
-            alt="card-back"
-          />
-        ) : (
-          <div className="flex justify-center items-center w-[170px] rounded-lg border border-dashed h-full">
-            <GiClubs className="text-white drop-shadow-lg" size={32} />
-          </div>
-        )}
-        <figcaption className="self-start">
-          {discardPile.length} cards
-        </figcaption>
-      </figure>
+      <Card
+        label="Deck"
+        src={`https://deckofcardsapi.com/static/img/back.png`}
+        pile={deckStatus?.deck_id.trim() !== ""}
+        description={`${deckStatus?.remaining} cards`}
+      />
+      <Card
+        label="Discard"
+        src={`https://deckofcardsapi.com/static/img/${discardPile.at(-1)}.png`}
+        pile={discardPile.length > 0}
+        description={`${discardPile.length} cards`}
+      />
     </div>
   );
 }
