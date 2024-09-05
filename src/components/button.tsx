@@ -1,6 +1,22 @@
 import React, { ComponentProps, ReactNode } from "react";
+import { tv, VariantProps } from "tailwind-variants";
 
-interface ButtonProps extends ComponentProps<"button"> {
+const buttonVariants = tv({
+  base: "flex items-center justify-center gap-2 py-2 px-3 min-w-[120px] max-w-[150px] rounded-md shadow-md duration-300",
+  variants: {
+    variant: {
+      primary: "bg-white text-black hover:text-primary",
+      secondary: "bg-secondary text-white hover:text-zinc-50",
+    },
+  },
+  defaultVariants: {
+    variant: "primary",
+  },
+});
+
+interface ButtonProps
+  extends ComponentProps<"button">,
+    VariantProps<typeof buttonVariants> {
   children: ReactNode;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
@@ -12,12 +28,13 @@ export default function Button({
   leftIcon,
   rightIcon,
   classNameExtension,
+  variant,
   ...props
 }: ButtonProps) {
   return (
     <button
       {...props}
-      className={`${classNameExtension} flex items-center justify-center gap-2 py-2 px-3 min-w-[120px] rounded-md bg-white shadow-md text-black hover:text-primary duration-300`}
+      className={`${classNameExtension} ${buttonVariants({ variant })}`}
     >
       {leftIcon}
       {children}

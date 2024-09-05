@@ -14,6 +14,9 @@ const config: Config = {
         black: "#1a1a1a",
         white: "#D9D9D9",
       },
+      boxShadow: {
+        card: "0px 4px 4px rgba(0, 0, 0, 0.25)",
+      },
       screens: {
         xs: "480px",
         sm: "640px",

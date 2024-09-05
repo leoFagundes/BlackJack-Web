@@ -7,7 +7,8 @@
   h2,
   h3,
   h4,
-  p {
+  p,
+  figcaption {
     text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4);
   }
 }
