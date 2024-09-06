@@ -21,6 +21,7 @@ interface ButtonProps
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
   classNameExtension?: string;
+  isDisabled?: boolean;
 }
 
 export default function Button({
@@ -29,12 +30,16 @@ export default function Button({
   rightIcon,
   classNameExtension,
   variant,
+  isDisabled = false,
   ...props
 }: ButtonProps) {
   return (
     <button
       {...props}
-      className={`${classNameExtension} ${buttonVariants({ variant })}`}
+      disabled={isDisabled}
+      className={`${classNameExtension} ${
+        isDisabled ? "opacity-60" : ""
+      } ${buttonVariants({ variant })}`}
     >
       {leftIcon}
       {children}

@@ -14,7 +14,7 @@ export default function Modal({ children, isOpen, onClose }: ModalProps) {
       {isOpen && (
         <section className="flex justify-center items-center fixed top-0 right-0 h-screen w-screen bg-black/30 backdrop-blur-sm">
           <div
-            className="relative min-h-[300px] p-4 min-w-[300px] max-w-[90%] max-h-[90%] bg-cover bg-no-repeat rounded-lg shadow-card"
+            className="relative min-h-[300px] p-4 min-w-[300px] max-w-[90%] max-h-[90%] bg-cover bg-no-repeat rounded-lg shadow-card scroll overflow-y-scroll"
             style={{ backgroundImage: `url(${background.src})` }}
           >
             {children}

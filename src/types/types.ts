@@ -15,3 +15,16 @@ export interface CardProps {
   suit: string;
   value: string;
 }
+
+export type TRunAnimationParams = {
+  speed: number;
+  duration?: number;
+  delay?: number;
+};
+
+export type TConductorInstance = {
+  run: (params: TRunAnimationParams) => void;
+  shoot: () => void;
+  pause: () => void;
+  stop: () => void;
+};

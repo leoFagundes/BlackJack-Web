@@ -1,0 +1,58 @@
+[
+  {
+    "title": "Objetivo",
+    "description": [
+      "O objetivo do blackjack é ter uma mão cujo valor seja o mais próximo possível de 21, sem ultrapassar esse número."
+    ]
+  },
+  {
+    "title": "Valores das Cartas",
+    "description": [
+      "As cartas de 2 a 10 têm valores equivalentes aos seus números.",
+      "As cartas face (valete, dama, rei) têm o valor de 10.",
+      "As cartas de Ás podem valer 1 ou 11, dependendo do que for mais favorável para a mão do jogador."
+    ]
+  },
+  {
+    "title": "O Jogo",
+    "description": [
+      "Cada jogador recebe duas cartas, e o dealer (croupier) também recebe duas cartas, uma virada para cima e outra virada para baixo.",
+      "Os jogadores tentam chegar o mais perto possível de 21 somando os valores das cartas em suas mãos."
+    ]
+  },
+  {
+    "title": "Blackjack",
+    "description": [
+      "Um 'blackjack' ocorre quando um jogador recebe um Ás e uma carta de valor 10 (10, valete, dama ou rei) como suas duas primeiras cartas."
+    ]
+  },
+  {
+    "title": "Jogada do Dealer",
+    "description": [
+      "O dealer deve seguir regras específicas. Normalmente, o dealer continua a tirar cartas até atingir um total de 17 ou mais. Se o dealer ultrapassar 21, todos os jogadores que ainda estão na mão ganham."
+    ]
+  },
+  {
+    "title": "Vitória e Derrota",
+    "description": [
+      "Um jogador vence se sua mão totalizar mais perto de 21 do que a mão do dealer, sem ultrapassar 21.",
+      "Se a mão do jogador ultrapassar 21, ele perde automaticamente (chamado de 'bust').",
+      "Se o dealer ultrapassar 21, todos os jogadores que ainda estão na mão ganham."
+    ]
+  },
+  {
+    "title": "Empate (Push)",
+    "description": [
+      "Se as mãos do jogador e do dealer tiverem o mesmo valor, a mão é um empate (push), e o jogador recupera sua aposta."
+    ]
+  },
+  {
+    "title": "Pontuação",
+    "description": [
+      "Quando o jogador decide 'stand', a pontuação é comparada entre o jogador e o dealer:",
+      "A pontuação da partida é a diferença de pontos de quem ganhou referente a quem perdeu.",
+      "Caso um jogador ou o dealer passe de 21 pontos ele perderá a quantidade sobressalente de pontos e uma nova rodada vai começar.",
+      "Em caso de empate, nenhum ponto é ganho ou perdido."
+    ]
+  }
+]

@@ -1,11 +1,15 @@
 "use client";
 
 import Button from "@/components/button";
+import Confetti from "@/components/confetti";
 import UseSumCardValues from "@/hooks/useSumCardValues";
 import DeckRepositorie from "@/services/DeckRepositorie";
 import { CardProps, DeckProps } from "@/types/types";
 import Image from "next/image";
 import { Dispatch, Fragment, SetStateAction, useEffect, useState } from "react";
+import { GiClubs } from "react-icons/gi";
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 interface TableProps {
   deckId: string | undefined;
@@ -45,6 +49,8 @@ export default function Table({
   setMessage,
 }: TableProps) {
   const [scoreAlreadyApply, setScoreAlreadyApply] = useState(true);
+  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [isConfetti, setIsConfetti] = useState(false);
 
   const computerSum = UseSumCardValues({
     array: computerCards?.map((card) => card.value) || [],
@@ -61,12 +67,12 @@ export default function Table({
     try {
       const cardDrawed = await DeckRepositorie.drawCard(deckId, 1);
 
+      setScoreAlreadyApply(false);
       setPlayerCards([...playerCards, cardDrawed.cards[0]]);
 
       const status = await DeckRepositorie.deckStatus(deckId);
 
       setDeckStatus(status);
-      setScoreAlreadyApply(false);
 
       const deckFromLocalStorage = localStorage.getItem("blackjack-web");
       if (deckFromLocalStorage) {
@@ -90,12 +96,15 @@ export default function Table({
       if (!deckId) return;
       if (!computerCards) return;
 
+      setScoreAlreadyApply(false);
+      setButtonDisabled(true);
+
       // Cria uma cópia das cartas do computador para trabalhar localmente
       let updatedComputerCards = [...computerCards];
       let currentComputerSum = computerSum;
 
       // O computador continuará comprando cartas até ter mais pontos que o jogador ou passar de 21
-      while (currentComputerSum <= playerSum && currentComputerSum <= 21) {
+      while (currentComputerSum <= playerSum && currentComputerSum < 21) {
         const cardDrawed = await DeckRepositorie.drawCard(deckId, 1);
 
         // Atualiza a lista local de cartas do computador
@@ -125,15 +134,8 @@ export default function Table({
             })
           );
         }
-      }
 
-      // Condição final do jogo, decide quem venceu
-      if (currentComputerSum > playerSum && currentComputerSum <= 21) {
-        setMessage(
-          `Oponente ganhou (${currentComputerSum} o ${playerSum}) | ${
-            (currentComputerSum - playerSum) * (isDoubleDown ? 2 : 1)
-          } pontos!`
-        );
+        await delay(600);
       }
     } catch (error) {
       console.error("Não foi possível realizar a ação 'stand': ", error);
@@ -143,6 +145,7 @@ export default function Table({
   function handleDoubleDown() {
     setIsDoubleDown(true);
     handleHit();
+    handleStand();
   }
 
   async function handleNewTable() {
@@ -151,37 +154,8 @@ export default function Table({
       if (!playerCards) return;
       if (!computerCards) return;
 
-      // const responseDrawFromPlayer = await DeckRepositorie.drawFromPile(
-      //   deckId,
-      //   "player",
-      //   playerCards?.length
-      // );
-
-      // const responseDrawFromComputer = await DeckRepositorie.drawFromPile(
-      //   deckId,
-      //   "computer",
-      //   computerCards?.length
-      // );
-
-      // await DeckRepositorie.addToPile(
-      //   deckId,
-      //   "discard",
-      //   responseDrawFromPlayer.cards.map((card: CardProps) => card.code)
-      // );
-
-      // await DeckRepositorie.addToPile(
-      //   deckId,
-      //   "discard",
-      //   responseDrawFromComputer.cards.map((card: CardProps) => card.code)
-      // );
-
-      // setDiscardCards([
-      //   ...discardCards,
-      //   responseDrawFromPlayer.cards.map((card: CardProps) => card.code),
-      //   responseDrawFromComputer.cards.map((card: CardProps) => card.code),
-      // ]);
-
       setIsDoubleDown(false);
+      setButtonDisabled(false);
 
       setDiscardCards([
         ...discardCards,
@@ -221,11 +195,16 @@ export default function Table({
   }
 
   useEffect(() => {
+    if (playerSum === 21 && computerSum === 21) {
+      setScoreAlreadyApply(true);
+      setMessage("Empate!");
+    }
+
     if (playerSum > 21 && scoreAlreadyApply === false) {
       const doubleDownMult = isDoubleDown ? 2 : 1;
       setScoreAlreadyApply(true);
       setMessage(
-        `Oponente ganhou | ${
+        `${isDoubleDown ? "(DOUBLE DOWN) " : ""}Oponente ganhou | ${
           (playerSum - computerSum) * doubleDownMult
         } pontos!`
       );
@@ -238,11 +217,31 @@ export default function Table({
     if (computerSum > 21 && scoreAlreadyApply === false) {
       const doubleDownMult = isDoubleDown ? 2 : 1;
       setScoreAlreadyApply(true);
+      setIsConfetti(true);
+      setTimeout(() => {
+        setIsConfetti(false);
+      }, 1200);
       setMessage(
-        `Jogador ganhou | ${(computerSum - playerSum) * doubleDownMult} pontos!`
+        `${isDoubleDown ? "(DOUBLE DOWN) " : ""}Jogador ganhou | ${
+          (computerSum - playerSum) * doubleDownMult
+        } pontos!`
       );
       setPlayerScore([
         ...playerScore,
+        (computerSum - playerSum) * doubleDownMult,
+      ]);
+    }
+
+    if (computerSum > playerSum && computerSum <= 21) {
+      const doubleDownMult = isDoubleDown ? 2 : 1;
+      setScoreAlreadyApply(true);
+      setMessage(
+        `${isDoubleDown ? "(DOUBLE DOWN) " : ""}Oponente ganhou | ${
+          (computerSum - playerSum) * doubleDownMult
+        } pontos!`
+      );
+      setComputerScore([
+        ...computerScore,
         (computerSum - playerSum) * doubleDownMult,
       ]);
     }
@@ -250,6 +249,7 @@ export default function Table({
 
   return (
     <div className="flex flex-col gap-8">
+      {isConfetti && <Confetti />}
       <section className="flex flex-col w-full gap-2">
         <label className="text-lg">Oponente | Soma: {computerSum}</label>
         <div className="flex w-full justify-center">
@@ -283,7 +283,10 @@ export default function Table({
       <section className="flex gap-2">
         {message ? (
           <div className="flex w-full items-center justify-center gap-4">
-            <p>{message}</p>
+            <p className="flex items-center gap-2">
+              <GiClubs />
+              {message}
+            </p>
             <Button onClick={handleNewTable} variant="secondary">
               Nova mesa
             </Button>
@@ -291,13 +294,25 @@ export default function Table({
         ) : (
           <>
             {" "}
-            <Button onClick={handleHit} variant="secondary">
+            <Button
+              isDisabled={buttonDisabled}
+              onClick={handleHit}
+              variant="secondary"
+            >
               Hit
             </Button>
-            <Button onClick={handleStand} variant="secondary">
+            <Button
+              isDisabled={buttonDisabled}
+              onClick={handleStand}
+              variant="secondary"
+            >
               Stand
             </Button>
-            <Button onClick={handleDoubleDown} variant="secondary">
+            <Button
+              isDisabled={buttonDisabled}
+              onClick={handleDoubleDown}
+              variant="secondary"
+            >
               Double Down
             </Button>
           </>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import background from "../../../public/images/bg.png";
 import backgroundDoubleDown from "../../../public/images/bg-doubledown.png";
 import DeckRepositorie from "@/services/DeckRepositorie";
@@ -15,6 +15,8 @@ import { useRouter } from "next/navigation";
 import Modal from "@/components/modal";
 import { CardProps, DeckProps } from "@/types/types";
 import Loader from "@/components/loader";
+import rules from "../../utils/rules.json";
+import PlayerWon from "./playerWon";
 
 function getStoredCards(key: string) {
   if (typeof window !== "undefined") {
@@ -52,6 +54,7 @@ function getStoredBoolean(key: string) {
 export default function GameBoard() {
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [deckStatus, setDeckStatus] = useState<DeckProps>();
+  const [finishGame, setFinishGame] = useState(false);
   const [message, setMessage] = useState(() =>
     getStoredString("messageStorage")
   );
@@ -158,6 +161,10 @@ export default function GameBoard() {
 
   useEffect(() => {
     const deckFromLocalStorage = localStorage.getItem("blackjack-web");
+    console.log(deckStatus?.remaining);
+    if (deckStatus?.remaining && deckStatus?.remaining <= 5) {
+      setFinishGame(true);
+    }
 
     if (deckFromLocalStorage) {
       const parsedDeck = JSON.parse(deckFromLocalStorage);
@@ -189,6 +196,7 @@ export default function GameBoard() {
 
   const handleReset = () => {
     localStorage.removeItem("blackjack-web");
+    setFinishGame(false);
     router.push("/");
   };
 
@@ -201,6 +209,12 @@ export default function GameBoard() {
         })`,
       }}
     >
+      {finishGame && (
+        <PlayerWon
+          win={playerScore > computerScore ? "computer" : "player"}
+          onClick={handleReset}
+        />
+      )}
       {isLoading ? (
         <div className="flex items-center justify-center w-full h-full">
           <Loader />
@@ -269,7 +283,20 @@ export default function GameBoard() {
         isOpen={isRulesModalOpen}
         onClose={() => setIsRulesModalOpen(false)}
       >
-        teste
+        <div className="flex flex-col gap-4 px-4 backdrop-blur-sm">
+          <h1 className="self-center text-3xl">Regras do Jogo</h1>
+          {rules.map(({ title, description }, index) => (
+            <Fragment key={index}>
+              <hr />
+              <article className="flex flex-col gap-1 bg-transparent ">
+                <h2 className="text-2xl">{title}</h2>
+                {description.map((item, index) => (
+                  <p key={index}>{item}</p>
+                ))}
+              </article>
+            </Fragment>
+          ))}
+        </div>
       </Modal>
     </div>
   );
