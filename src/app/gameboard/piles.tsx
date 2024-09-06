@@ -2,17 +2,13 @@
 
 import Card from "@/components/card";
 import { DeckProps } from "@/types/types";
-import Image from "next/image";
-import { useState } from "react";
-import { GiClubs } from "react-icons/gi";
 
 interface PilesProps {
   deckStatus: DeckProps | undefined;
+  discardCards: string[];
 }
 
-export default function Piles({ deckStatus }: PilesProps) {
-  const [discardPile, setDiscardPile] = useState<string[]>([]);
-
+export default function Piles({ deckStatus, discardCards }: PilesProps) {
   return (
     <div className="flex justify-around gap-4">
       <Card
@@ -23,9 +19,9 @@ export default function Piles({ deckStatus }: PilesProps) {
       />
       <Card
         label="Discard"
-        src={`https://deckofcardsapi.com/static/img/${discardPile.at(-1)}.png`}
-        pile={discardPile.length > 0}
-        description={`${discardPile.length} cards`}
+        src={`https://deckofcardsapi.com/static/img/${discardCards.at(-1)}.png`}
+        pile={discardCards.length > 0}
+        description={`${discardCards.length} cards`}
       />
     </div>
   );

@@ -3,9 +3,9 @@
 import Button from "@/components/button";
 import UseSumCardValues from "@/hooks/useSumCardValues";
 import DeckRepositorie from "@/services/DeckRepositorie";
-import { CardProps } from "@/types/types";
+import { CardProps, DeckProps } from "@/types/types";
 import Image from "next/image";
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Dispatch, Fragment, SetStateAction, useEffect, useState } from "react";
 
 interface TableProps {
   deckId: string | undefined;
@@ -13,6 +13,14 @@ interface TableProps {
   computerCards: CardProps[] | undefined;
   setPlayerCards: Dispatch<SetStateAction<CardProps[]>>;
   setComputerCards: Dispatch<SetStateAction<CardProps[]>>;
+  setIsDoubleDown: Dispatch<SetStateAction<boolean>>;
+  setDeckStatus: Dispatch<SetStateAction<DeckProps | undefined>>;
+  setComputerScore: Dispatch<SetStateAction<number[]>>;
+  setPlayerScore: Dispatch<SetStateAction<number[]>>;
+  setDiscardCards: Dispatch<SetStateAction<string[]>>;
+  computerScore: number[];
+  playerScore: number[];
+  discardCards: string[];
 }
 
 export default function Table({
@@ -21,7 +29,17 @@ export default function Table({
   computerCards,
   setPlayerCards,
   setComputerCards,
+  setIsDoubleDown,
+  setDeckStatus,
+  setComputerScore,
+  setPlayerScore,
+  setDiscardCards,
+  computerScore,
+  playerScore,
+  discardCards,
 }: TableProps) {
+  const [message, setMessage] = useState("");
+
   const computerSum = UseSumCardValues({
     array: computerCards?.map((card) => card.value) || [],
   });
@@ -30,29 +48,139 @@ export default function Table({
     array: playerCards?.map((card) => card.value) || [],
   });
 
-  useEffect(() => {
-    async function fecthPlayersCards() {
+  async function handleHit() {
+    if (!deckId) return;
+    if (!playerCards) return;
+
+    try {
+      const cardDrawed = await DeckRepositorie.drawCard(deckId, 1);
+
+      setPlayerCards([...playerCards, cardDrawed.cards[0]]);
+
+      const status = await DeckRepositorie.deckStatus(deckId);
+
+      setDeckStatus(status);
+
+      const deckFromLocalStorage = localStorage.getItem("blackjack-web");
+      if (deckFromLocalStorage) {
+        const parsedDeck = JSON.parse(deckFromLocalStorage);
+
+        localStorage.setItem(
+          "blackjack-web",
+          JSON.stringify({
+            ...parsedDeck,
+            playerCardsStorage: [...playerCards, cardDrawed.cards[0]],
+          })
+        );
+      }
+    } catch (error) {
+      console.error("Não foi possível realizar a ação 'hit': ", error);
+    }
+  }
+
+  function handleStand() {}
+
+  function handleDoubleDown() {
+    setIsDoubleDown(true);
+  }
+
+  async function handleNewTable() {
+    try {
       if (!deckId) return;
       if (!playerCards) return;
+      if (!computerCards) return;
 
-      try {
-        const responsePlayer = await DeckRepositorie.listCardsInPile(
-          deckId,
-          "player"
-        );
-        const responseComputer = await DeckRepositorie.listCardsInPile(
-          deckId,
-          "computer"
-        );
-        setPlayerCards(responsePlayer.piles.player.cards);
-        setComputerCards(responseComputer.piles.computer.cards);
-      } catch (error) {
-        console.error("");
-      }
+      // const responseDrawFromPlayer = await DeckRepositorie.drawFromPile(
+      //   deckId,
+      //   "player",
+      //   playerCards?.length
+      // );
+
+      // const responseDrawFromComputer = await DeckRepositorie.drawFromPile(
+      //   deckId,
+      //   "computer",
+      //   computerCards?.length
+      // );
+
+      // await DeckRepositorie.addToPile(
+      //   deckId,
+      //   "discard",
+      //   responseDrawFromPlayer.cards.map((card: CardProps) => card.code)
+      // );
+
+      // await DeckRepositorie.addToPile(
+      //   deckId,
+      //   "discard",
+      //   responseDrawFromComputer.cards.map((card: CardProps) => card.code)
+      // );
+
+      // setDiscardCards([
+      //   ...discardCards,
+      //   responseDrawFromPlayer.cards.map((card: CardProps) => card.code),
+      //   responseDrawFromComputer.cards.map((card: CardProps) => card.code),
+      // ]);
+
+      await DeckRepositorie.returnCardsInPile(deckId, "player");
+      await DeckRepositorie.returnCardsInPile(deckId, "computer");
+
+      const responseDrawCards = await DeckRepositorie.drawCard(deckId, 3);
+
+      const cardsDrawed: CardProps[] = responseDrawCards.cards;
+
+      setPlayerCards(cardsDrawed.slice(0, 2));
+      setComputerCards(cardsDrawed.slice(2, 3));
+
+      await DeckRepositorie.addToPile(
+        deckId,
+        "player",
+        cardsDrawed.slice(0, 2).map((card) => card.code)
+      );
+
+      await DeckRepositorie.addToPile(
+        deckId,
+        "computer",
+        cardsDrawed.slice(2, 3).map((card) => card.code)
+      );
+
+      const status = await DeckRepositorie.deckStatus(deckId);
+
+      setDeckStatus(status);
+      setMessage("");
+    } catch (error) {
+      console.error("Erro ao reiniciar mesa: ", error);
     }
+  }
 
+  async function fecthPlayersCards() {
+    if (!deckId) return;
+    if (!playerCards) return;
+
+    try {
+      const responsePlayer = await DeckRepositorie.listCardsInPile(
+        deckId,
+        "player"
+      );
+      const responseComputer = await DeckRepositorie.listCardsInPile(
+        deckId,
+        "computer"
+      );
+      setPlayerCards(responsePlayer.piles.player.cards);
+      setComputerCards(responseComputer.piles.computer.cards);
+    } catch (error) {
+      console.error("");
+    }
+  }
+
+  useEffect(() => {
     fecthPlayersCards();
   }, []);
+
+  useEffect(() => {
+    if (playerSum > 21) {
+      setMessage(`Jogador perdeu | ${computerSum - playerSum} pontos`);
+      setPlayerScore([...playerScore, computerSum - playerSum]);
+    }
+  }, [playerSum]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -61,19 +189,53 @@ export default function Table({
         <div className="flex w-full justify-center">
           {computerCards &&
             computerCards.map((card, index) => (
-              <div
-                key={index}
-                style={{ transform: `translateX(-${30 * index}px)` }}
-              >
-                <Image src={card.image} width={130} height={180} alt="card" />
-              </div>
+              <Fragment key={index}>
+                <div style={{ transform: `translateX(-${30 * index}px)` }}>
+                  <Image
+                    className="slideIn"
+                    src={card.image}
+                    width={130}
+                    height={180}
+                    alt="card"
+                  />
+                </div>
+                {computerCards.length === 1 && (
+                  <div style={{ transform: `translateX(-30px)` }}>
+                    <Image
+                      className="slideIn"
+                      src={`https://deckofcardsapi.com/static/img/back.png`}
+                      width={130}
+                      height={180}
+                      alt="card"
+                    />
+                  </div>
+                )}
+              </Fragment>
             ))}
         </div>
       </section>
       <section className="flex gap-2">
-        <Button variant="secondary">Hit</Button>
-        <Button variant="secondary">Stand</Button>
-        <Button variant="secondary">Double Down</Button>
+        {message ? (
+          <div className="flex w-full items-center justify-center gap-4">
+            <p>{message}</p>
+            <Button onClick={handleNewTable} variant="secondary">
+              Nova mesa
+            </Button>
+          </div>
+        ) : (
+          <>
+            {" "}
+            <Button onClick={handleHit} variant="secondary">
+              Hit
+            </Button>
+            <Button onClick={handleStand} variant="secondary">
+              Stand
+            </Button>
+            <Button onClick={handleDoubleDown} variant="secondary">
+              Double Down
+            </Button>
+          </>
+        )}
       </section>
       <section className="flex flex-col gap-2 w-full">
         <label className="text-lg">Jogador | Soma: {playerSum}</label>
@@ -84,7 +246,13 @@ export default function Table({
                 key={index}
                 style={{ transform: `translateX(-${30 * index}px)` }}
               >
-                <Image src={card.image} width={130} height={180} alt="card" />
+                <Image
+                  className="slideIn"
+                  src={card.image}
+                  width={130}
+                  height={180}
+                  alt="card"
+                />
               </div>
             ))}
         </div>

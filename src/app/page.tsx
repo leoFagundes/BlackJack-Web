@@ -1,3 +1,5 @@
+"use client";
+
 import Button from "@/components/button";
 import cards from "../../public/svg/cards.svg";
 import { GiClubs } from "react-icons/gi";
@@ -10,6 +12,8 @@ import { Fragment } from "react";
 import Link from "next/link";
 
 export default function Home() {
+  const deckIdFromLocalStorage = localStorage.getItem("blackjack-web");
+
   return (
     <main className="flex w-full h-full">
       <section className="w-full sm:w-[60%] flex flex-col gap-4 justify-center items-center relative">
@@ -18,7 +22,9 @@ export default function Home() {
           <h2 className="text-2xl sm:text-4xl  ">WEB</h2>
         </div>
         <Link href={"/gameboard"}>
-          <Button rightIcon={<GiClubs />}>Iniciar</Button>
+          <Button rightIcon={<GiClubs />}>
+            {deckIdFromLocalStorage ? "Continuar Jogo" : "Iniciar"}
+          </Button>
         </Link>
 
         <Fragment>

@@ -51,10 +51,32 @@ class DeckRepositorie {
     }
   }
 
+  static async drawFromPile(deckId: string, pileName: string, count: number) {
+    try {
+      const response = await app.get(
+        `/${deckId}/pile/${pileName}/draw/?count=${count}`
+      );
+      console.log("DRAWFROMPILE", response.data);
+      return response.data;
+    } catch (error) {
+      console.error(`Não foi visualizar o status do deck ${deckId}: `, error);
+    }
+  }
+
   static async listCardsInPile(deckId: string, pileName: string) {
     try {
       const response = await app.get(`/${deckId}/pile/${pileName}/list/`);
       console.log("LISTPILE", response.data);
+      return response.data;
+    } catch (error) {
+      console.error(`Não foi visualizar o status do deck ${deckId}: `, error);
+    }
+  }
+
+  static async returnCardsInPile(deckId: string, pileName: string) {
+    try {
+      const response = await app.get(`/${deckId}/pile/${pileName}/return/`);
+      console.log("RETURN", response.data);
       return response.data;
     } catch (error) {
       console.error(`Não foi visualizar o status do deck ${deckId}: `, error);
