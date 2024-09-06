@@ -14,6 +14,7 @@ interface TableProps {
   setPlayerCards: Dispatch<SetStateAction<CardProps[]>>;
   setComputerCards: Dispatch<SetStateAction<CardProps[]>>;
   setIsDoubleDown: Dispatch<SetStateAction<boolean>>;
+  isDoubleDown: boolean;
   setDeckStatus: Dispatch<SetStateAction<DeckProps | undefined>>;
   setComputerScore: Dispatch<SetStateAction<number[]>>;
   setPlayerScore: Dispatch<SetStateAction<number[]>>;
@@ -30,6 +31,7 @@ export default function Table({
   setPlayerCards,
   setComputerCards,
   setIsDoubleDown,
+  isDoubleDown,
   setDeckStatus,
   setComputerScore,
   setPlayerScore,
@@ -82,6 +84,7 @@ export default function Table({
 
   function handleDoubleDown() {
     setIsDoubleDown(true);
+    handleHit();
   }
 
   async function handleNewTable() {
@@ -120,8 +123,16 @@ export default function Table({
       //   responseDrawFromComputer.cards.map((card: CardProps) => card.code),
       // ]);
 
-      await DeckRepositorie.returnCardsInPile(deckId, "player");
-      await DeckRepositorie.returnCardsInPile(deckId, "computer");
+      setIsDoubleDown(false);
+
+      setDiscardCards([
+        ...discardCards,
+        ...computerCards.map((card: CardProps) => card.code),
+        ...playerCards.map((card: CardProps) => card.code),
+      ]);
+
+      // await DeckRepositorie.returnCardsInPile(deckId, "player");
+      // await DeckRepositorie.returnCardsInPile(deckId, "computer");
 
       const responseDrawCards = await DeckRepositorie.drawCard(deckId, 3);
 
@@ -151,34 +162,41 @@ export default function Table({
     }
   }
 
-  async function fecthPlayersCards() {
-    if (!deckId) return;
-    if (!playerCards) return;
+  // async function fecthPlayersCards() {
+  //   if (!deckId) return;
+  //   if (!playerCards) return;
 
-    try {
-      const responsePlayer = await DeckRepositorie.listCardsInPile(
-        deckId,
-        "player"
-      );
-      const responseComputer = await DeckRepositorie.listCardsInPile(
-        deckId,
-        "computer"
-      );
-      setPlayerCards(responsePlayer.piles.player.cards);
-      setComputerCards(responseComputer.piles.computer.cards);
-    } catch (error) {
-      console.error("");
-    }
-  }
+  //   try {
+  //     const responsePlayer = await DeckRepositorie.listCardsInPile(
+  //       deckId,
+  //       "player"
+  //     );
+  //     const responseComputer = await DeckRepositorie.listCardsInPile(
+  //       deckId,
+  //       "computer"
+  //     );
 
-  useEffect(() => {
-    fecthPlayersCards();
-  }, []);
+  //     setPlayerCards(responsePlayer.piles.player.cards);
+  //     setComputerCards(responseComputer.piles.computer.cards);
+  //   } catch (error) {
+  //     console.error("");
+  //   }
+  // }
+
+  // useEffect(() => {
+  //   // fecthPlayersCards();
+  // }, []);
 
   useEffect(() => {
     if (playerSum > 21) {
-      setMessage(`Jogador perdeu | ${computerSum - playerSum} pontos`);
-      setPlayerScore([...playerScore, computerSum - playerSum]);
+      const doubleDownMult = isDoubleDown ? 2 : 1;
+      setMessage(
+        `Jogador perdeu | ${(computerSum - playerSum) * doubleDownMult} pontos`
+      );
+      setPlayerScore([
+        ...playerScore,
+        (computerSum - playerSum) * doubleDownMult,
+      ]);
     }
   }, [playerSum]);
 

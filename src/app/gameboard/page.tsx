@@ -27,20 +27,39 @@ function getStoredCards(key: string) {
   return [];
 }
 
+function getStoredBoolean(key: string) {
+  if (typeof window !== "undefined") {
+    const dataFromLocalStorage = localStorage.getItem("blackjack-web");
+    if (dataFromLocalStorage) {
+      const parsedData = JSON.parse(dataFromLocalStorage);
+      return Boolean(parsedData[key]);
+    }
+  }
+  return false;
+}
 export default function GameBoard() {
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [deckStatus, setDeckStatus] = useState<DeckProps>();
   const [playerCards, setPlayerCards] = useState<CardProps[]>(() =>
     getStoredCards("playerCardsStorage")
   );
-  const [discardCards, setDiscardCards] = useState<string[]>([]);
+  const [discardCards, setDiscardCards] = useState<string[]>(() =>
+    getStoredCards("discardCardsStorage")
+  );
   const [computerCards, setComputerCards] = useState<CardProps[]>(() =>
     getStoredCards("computerCardsStorage")
   );
-  const [playerScore, setPlayerScore] = useState<number[]>([]);
-  const [computerScore, setComputerScore] = useState<number[]>([]);
+  const [playerScore, setPlayerScore] = useState<number[]>(() =>
+    getStoredCards("playerScoreStorage")
+  );
+  const [computerScore, setComputerScore] = useState<number[]>(() =>
+    getStoredCards("computerScoreStorage")
+  );
   const [gameIsRunning, setGameIsRunning] = useState(false);
-  const [isDoubleDown, setIsDoubleDown] = useState(false);
+  const [isDoubleDown, setIsDoubleDown] = useState(() =>
+    getStoredBoolean("isDoubleDownStorage")
+  );
+
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -82,12 +101,6 @@ export default function GameBoard() {
     try {
       const deckFromLocalStorage = localStorage.getItem("blackjack-web");
 
-      // await DeckRepositorie.drawCard(newDeckId, 6);
-      // await DeckRepositorie.deckStatus(newDeckId);
-      // await DeckRepositorie.reshuffleCards(newDeckId);
-      // await DeckRepositorie.addToPile(newDeckId, "discard", ["AS", "2S"]);
-      // await DeckRepositorie.listCardsInPile(newDeckId, "discard");
-
       if (deckFromLocalStorage) {
         const parsedDeck = JSON.parse(deckFromLocalStorage);
         const { deckId } = parsedDeck;
@@ -109,6 +122,9 @@ export default function GameBoard() {
           playerCardsStorage: [],
           computerCardsStorage: [],
           discardCardsStorage: [],
+          playerScoreStorage: [],
+          computerScoreStorage: [],
+          isDoubleDownStorage: false,
         })
       );
     } catch (error) {
@@ -122,23 +138,25 @@ export default function GameBoard() {
     fetchDeck();
   }, []);
 
-  // useEffect(() => {
-  //   const deckFromLocalStorage = localStorage.getItem("blackjack-web");
+  useEffect(() => {
+    const deckFromLocalStorage = localStorage.getItem("blackjack-web");
 
-  //   if (deckFromLocalStorage) {
-  //     const parsedDeck = JSON.parse(deckFromLocalStorage);
+    if (deckFromLocalStorage) {
+      const parsedDeck = JSON.parse(deckFromLocalStorage);
 
-  //     localStorage.setItem(
-  //       "blackjack-web",
-  //       JSON.stringify({
-  //         ...parsedDeck,
-  //         playerCardsStorage: playerCards,
-  //         computerCardsStorage: computerCards,
-  //         discardCards: [],
-  //       })
-  //     );
-  //   }
-  // }, [playerCards, computerCards]);
+      localStorage.setItem(
+        "blackjack-web",
+        JSON.stringify({
+          ...parsedDeck,
+          playerCardsStorage: playerCards,
+          computerCardsStorage: computerCards,
+          playerScoreStorage: playerScore,
+          discardCardsStorage: discardCards,
+          isDoubleDownStorage: isDoubleDown,
+        })
+      );
+    }
+  }, [playerCards, computerCards, playerScore, discardCards, isDoubleDown]);
 
   const handleReset = () => {
     localStorage.removeItem("blackjack-web");
@@ -202,6 +220,7 @@ export default function GameBoard() {
                 setPlayerCards={setPlayerCards}
                 setComputerCards={setComputerCards}
                 setIsDoubleDown={setIsDoubleDown}
+                isDoubleDown={isDoubleDown}
                 setDeckStatus={setDeckStatus}
                 setComputerScore={setComputerScore}
                 setPlayerScore={setPlayerScore}
