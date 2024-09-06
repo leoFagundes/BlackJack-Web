@@ -27,6 +27,20 @@
     background: #499077;
     border-radius: 10px;
   }
+
+  .scroll-secondary::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scroll-secondary::-webkit-scrollbar-track {
+    background: #499077;
+    border-radius: 10px;
+  }
+
+  .scroll-secondary::-webkit-scrollbar-thumb {
+    background: #127545;
+    border-radius: 10px;
+  }
 }
 
 @layer utilities {

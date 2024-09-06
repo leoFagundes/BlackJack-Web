@@ -22,6 +22,8 @@ interface TableProps {
   computerScore: number[];
   playerScore: number[];
   discardCards: string[];
+  message: string | null;
+  setMessage: Dispatch<SetStateAction<string | null>>;
 }
 
 export default function Table({
@@ -39,8 +41,10 @@ export default function Table({
   computerScore,
   playerScore,
   discardCards,
+  message,
+  setMessage,
 }: TableProps) {
-  const [message, setMessage] = useState("");
+  const [scoreAlreadyApply, setScoreAlreadyApply] = useState(true);
 
   const computerSum = UseSumCardValues({
     array: computerCards?.map((card) => card.value) || [],
@@ -62,6 +66,7 @@ export default function Table({
       const status = await DeckRepositorie.deckStatus(deckId);
 
       setDeckStatus(status);
+      setScoreAlreadyApply(false);
 
       const deckFromLocalStorage = localStorage.getItem("blackjack-web");
       if (deckFromLocalStorage) {
@@ -80,7 +85,60 @@ export default function Table({
     }
   }
 
-  function handleStand() {}
+  async function handleStand() {
+    try {
+      if (!deckId) return;
+      if (!computerCards) return;
+
+      // Cria uma cópia das cartas do computador para trabalhar localmente
+      let updatedComputerCards = [...computerCards];
+      let currentComputerSum = computerSum;
+
+      // O computador continuará comprando cartas até ter mais pontos que o jogador ou passar de 21
+      while (currentComputerSum <= playerSum && currentComputerSum <= 21) {
+        const cardDrawed = await DeckRepositorie.drawCard(deckId, 1);
+
+        // Atualiza a lista local de cartas do computador
+        updatedComputerCards = [...updatedComputerCards, cardDrawed.cards[0]];
+
+        // Atualiza a soma dos pontos com as cartas locais
+        currentComputerSum = UseSumCardValues({
+          array: updatedComputerCards.map((card) => card.value),
+        });
+
+        // Atualiza o estado do React com as novas cartas
+        setComputerCards(updatedComputerCards);
+
+        // Atualiza o status do deck
+        const status = await DeckRepositorie.deckStatus(deckId);
+        setDeckStatus(status);
+
+        // Salva o progresso no localStorage (opcional)
+        const deckFromLocalStorage = localStorage.getItem("blackjack-web");
+        if (deckFromLocalStorage) {
+          const parsedDeck = JSON.parse(deckFromLocalStorage);
+          localStorage.setItem(
+            "blackjack-web",
+            JSON.stringify({
+              ...parsedDeck,
+              computerCardsStorage: updatedComputerCards,
+            })
+          );
+        }
+      }
+
+      // Condição final do jogo, decide quem venceu
+      if (currentComputerSum > playerSum && currentComputerSum <= 21) {
+        setMessage(
+          `Oponente ganhou (${currentComputerSum} o ${playerSum}) | ${
+            (currentComputerSum - playerSum) * (isDoubleDown ? 2 : 1)
+          } pontos!`
+        );
+      }
+    } catch (error) {
+      console.error("Não foi possível realizar a ação 'stand': ", error);
+    }
+  }
 
   function handleDoubleDown() {
     setIsDoubleDown(true);
@@ -162,43 +220,33 @@ export default function Table({
     }
   }
 
-  // async function fecthPlayersCards() {
-  //   if (!deckId) return;
-  //   if (!playerCards) return;
-
-  //   try {
-  //     const responsePlayer = await DeckRepositorie.listCardsInPile(
-  //       deckId,
-  //       "player"
-  //     );
-  //     const responseComputer = await DeckRepositorie.listCardsInPile(
-  //       deckId,
-  //       "computer"
-  //     );
-
-  //     setPlayerCards(responsePlayer.piles.player.cards);
-  //     setComputerCards(responseComputer.piles.computer.cards);
-  //   } catch (error) {
-  //     console.error("");
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   // fecthPlayersCards();
-  // }, []);
-
   useEffect(() => {
-    if (playerSum > 21) {
+    if (playerSum > 21 && scoreAlreadyApply === false) {
       const doubleDownMult = isDoubleDown ? 2 : 1;
+      setScoreAlreadyApply(true);
       setMessage(
-        `Jogador perdeu | ${(computerSum - playerSum) * doubleDownMult} pontos`
+        `Oponente ganhou | ${
+          (playerSum - computerSum) * doubleDownMult
+        } pontos!`
+      );
+      setComputerScore([
+        ...computerScore,
+        (playerSum - computerSum) * doubleDownMult,
+      ]);
+    }
+
+    if (computerSum > 21 && scoreAlreadyApply === false) {
+      const doubleDownMult = isDoubleDown ? 2 : 1;
+      setScoreAlreadyApply(true);
+      setMessage(
+        `Jogador ganhou | ${(computerSum - playerSum) * doubleDownMult} pontos!`
       );
       setPlayerScore([
         ...playerScore,
         (computerSum - playerSum) * doubleDownMult,
       ]);
     }
-  }, [playerSum]);
+  }, [playerSum, computerSum]);
 
   return (
     <div className="flex flex-col gap-8">

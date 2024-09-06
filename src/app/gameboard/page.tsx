@@ -27,6 +27,17 @@ function getStoredCards(key: string) {
   return [];
 }
 
+function getStoredString(key: string): string | null {
+  if (typeof window !== "undefined") {
+    const dataFromLocalStorage = localStorage.getItem("blackjack-web");
+    if (dataFromLocalStorage) {
+      const parsedData = JSON.parse(dataFromLocalStorage);
+      return parsedData[key] || null;
+    }
+  }
+  return null;
+}
+
 function getStoredBoolean(key: string) {
   if (typeof window !== "undefined") {
     const dataFromLocalStorage = localStorage.getItem("blackjack-web");
@@ -37,9 +48,13 @@ function getStoredBoolean(key: string) {
   }
   return false;
 }
+
 export default function GameBoard() {
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [deckStatus, setDeckStatus] = useState<DeckProps>();
+  const [message, setMessage] = useState(() =>
+    getStoredString("messageStorage")
+  );
   const [playerCards, setPlayerCards] = useState<CardProps[]>(() =>
     getStoredCards("playerCardsStorage")
   );
@@ -55,7 +70,9 @@ export default function GameBoard() {
   const [computerScore, setComputerScore] = useState<number[]>(() =>
     getStoredCards("computerScoreStorage")
   );
-  const [gameIsRunning, setGameIsRunning] = useState(false);
+  const [gameIsRunning, setGameIsRunning] = useState(() =>
+    getStoredBoolean("gameIsRunningStorage")
+  );
   const [isDoubleDown, setIsDoubleDown] = useState(() =>
     getStoredBoolean("isDoubleDownStorage")
   );
@@ -108,7 +125,6 @@ export default function GameBoard() {
         const status = await DeckRepositorie.deckStatus(deckId);
 
         setDeckStatus(status);
-        setGameIsRunning(true);
         return;
       }
 
@@ -125,6 +141,8 @@ export default function GameBoard() {
           playerScoreStorage: [],
           computerScoreStorage: [],
           isDoubleDownStorage: false,
+          gameIsRunningStorage: false,
+          messageStorage: null,
         })
       );
     } catch (error) {
@@ -151,12 +169,23 @@ export default function GameBoard() {
           playerCardsStorage: playerCards,
           computerCardsStorage: computerCards,
           playerScoreStorage: playerScore,
+          computerScoreStorage: computerScore,
           discardCardsStorage: discardCards,
           isDoubleDownStorage: isDoubleDown,
+          gameIsRunningStorage: gameIsRunning,
+          messageStorage: message,
         })
       );
     }
-  }, [playerCards, computerCards, playerScore, discardCards, isDoubleDown]);
+  }, [
+    playerCards,
+    computerCards,
+    computerScore,
+    playerScore,
+    discardCards,
+    isDoubleDown,
+    message,
+  ]);
 
   const handleReset = () => {
     localStorage.removeItem("blackjack-web");
@@ -228,6 +257,8 @@ export default function GameBoard() {
                 computerScore={computerScore}
                 setDiscardCards={setDiscardCards}
                 discardCards={discardCards}
+                message={message}
+                setMessage={setMessage}
               />
             )}
           </section>

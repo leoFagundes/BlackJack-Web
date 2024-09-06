@@ -18,9 +18,9 @@ export default function ScoreBoard({
       <div className="flex justify-around w-full h-full">
         <div className="flex flex-col">
           <p>Jogador</p>
-          <div className="flex-1 overflow-y-scroll max-h-[160px]">
-            {playerScore.map((value) => (
-              <p>{value}</p>
+          <div className="scroll-secondary flex-1 overflow-y-scroll max-h-[160px]">
+            {playerScore.map((value, index) => (
+              <p key={index}>{value}</p>
             ))}
           </div>
           <p>
@@ -33,9 +33,9 @@ export default function ScoreBoard({
         <div className="w-[1px] shadow-card h-full bg-white" />
         <div className="flex flex-col">
           <p>Oponente</p>
-          <div className="flex-1 overflow-y-scroll max-h-[160px]">
-            {computerScore.map((value) => (
-              <p>{value}</p>
+          <div className="scroll-secondary flex-1 overflow-y-scroll max-h-[160px]">
+            {computerScore.map((value, index) => (
+              <p key={index}>{value}</p>
             ))}
           </div>
           <p>
