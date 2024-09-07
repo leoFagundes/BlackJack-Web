@@ -271,7 +271,7 @@ export default function Table({
       {isConfetti && <Confetti />}
       <section className="flex flex-col w-full gap-2">
         <label className="text-lg">Oponente | Soma: {computerSum}</label>
-        <div className="flex w-full justify-center overflow-x-scroll scroll">
+        <div className="flex w-full justify-center sm:overflow-auto overflow-x-scroll scroll">
           <div className="flex max-w-[300px] sm:max-w-full">
             {computerCards &&
               computerCards.map((card, index) => (
@@ -342,7 +342,7 @@ export default function Table({
       </section>
       <section className="flex flex-col gap-2 w-full">
         <label className="text-lg">Jogador | Soma: {playerSum}</label>
-        <div className="flex w-full justify-center overflow-x-scroll scroll">
+        <div className="flex w-full justify-center sm:overflow-auto overflow-x-scroll scroll">
           <div className="flex max-w-[300px] sm:max-w-full">
             {playerCards &&
               playerCards.map((card, index) => (

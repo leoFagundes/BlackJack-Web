@@ -29,7 +29,7 @@
   {
     "title": "Jogada do Dealer",
     "description": [
-      "O dealer deve seguir regras específicas. Normalmente, o dealer continua a tirar cartas até atingir um total de 17 ou mais. Se o dealer ultrapassar 21, todos os jogadores que ainda estão na mão ganham."
+      "O dealer deve seguir regras específicas. Normalmente, o dealer continua até ter uma soma maior que a sua. Se o dealer ultrapassar 21, todos os jogadores que ainda estão na mão ganham."
     ]
   },
   {
@@ -37,13 +37,20 @@
     "description": [
       "Um jogador vence se sua mão totalizar mais perto de 21 do que a mão do dealer, sem ultrapassar 21.",
       "Se a mão do jogador ultrapassar 21, ele perde automaticamente (chamado de 'bust').",
-      "Se o dealer ultrapassar 21, todos os jogadores que ainda estão na mão ganham."
+      "Se o dealer ultrapassar 21, todos os jogadores que ainda estão na mão ganham.",
+      "O jogo acaba quando sobram 4 cartas ou menos no baralho."
     ]
   },
   {
     "title": "Empate (Push)",
     "description": [
-      "Se as mãos do jogador e do dealer tiverem o mesmo valor, a mão é um empate (push), e o jogador recupera sua aposta."
+      "Se as mãos do jogador e do dealer tiverem o mesmo valor, a mão é um empate (push), e ninguém perde ou ganha ponto."
+    ]
+  },
+  {
+    "title": "Double Down",
+    "description": [
+      "O jogador pega apenas mais uma carta e logo em seguida o dealer começa a jogada dele. Esse jogo vale o drobro de pontos."
     ]
   },
   {
