@@ -1,3 +1,5 @@
+"use client";
+
 import backgroundSecondary from "../../../public/images/bg-secondary.png";
 
 interface ScoreBoardProps {

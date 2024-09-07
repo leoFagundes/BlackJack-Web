@@ -1,3 +1,5 @@
+"use client";
+
 import React, { ComponentProps, ReactNode } from "react";
 import { tv, VariantProps } from "tailwind-variants";
 

@@ -1,3 +1,5 @@
+"use client";
+
 import Button from "@/components/button";
 import Confetti from "@/components/confetti";
 import { GrPowerReset } from "react-icons/gr";
@@ -9,7 +11,6 @@ interface PlayerWonProps {
 }
 
 function PlayerWon({ onClick, win }: PlayerWonProps) {
-  console.log(win);
   return (
     <div
       style={{ backgroundImage: `url(${backgroundCards.src})` }}

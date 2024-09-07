@@ -1,3 +1,5 @@
+"use client";
+
 import Fireworks from "react-canvas-confetti/dist/presets/fireworks";
 
 interface ConfettiProps {

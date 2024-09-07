@@ -1,3 +1,5 @@
+"use client";
+
 import { ReactNode } from "react";
 import { IoClose } from "react-icons/io5";
 import background from "../../public/images/bg-secondary.png";
