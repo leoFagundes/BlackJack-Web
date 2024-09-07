@@ -313,7 +313,7 @@ export default function GameBoard() {
               </Button>
             </div>
             {!gameIsRunning ? (
-              <div className="absolute h-full w-full flex items-center justify-center backdrop-blur-[2px]">
+              <div className="absolute h-full w-full flex items-center justify-center">
                 <Button
                   style={{ scale: "1.2" }}
                   leftIcon={<CiPlay1 />}
