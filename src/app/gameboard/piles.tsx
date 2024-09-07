@@ -16,6 +16,7 @@ export default function Piles({ deckStatus, discardCards }: PilesProps) {
         src={`https://deckofcardsapi.com/static/img/back.png`}
         pile={deckStatus?.deck_id.trim() !== ""}
         description={`${deckStatus?.remaining} cards`}
+        warnDescription={{ warnWhen: 10, count: deckStatus!.remaining }}
       />
       <Card
         label="Discard"

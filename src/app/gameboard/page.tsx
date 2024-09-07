@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useState } from "react";
 import background from "../../../public/images/bg.png";
 import backgroundDoubleDown from "../../../public/images/bg-doubledown.png";
+import backgroundCards from "../../../public/images/bg-cards.png";
 import DeckRepositorie from "@/services/DeckRepositorie";
 import Button from "@/components/button";
 import { CgCardSpades } from "react-icons/cg";
@@ -17,6 +18,8 @@ import { CardProps, DeckProps } from "@/types/types";
 import Loader from "@/components/loader";
 import rules from "../../utils/rules.json";
 import PlayerWon from "./playerWon";
+import { BiExpand } from "react-icons/bi";
+import { GiContract } from "react-icons/gi";
 
 function getStoredCards(key: string) {
   if (typeof window !== "undefined") {
@@ -54,6 +57,7 @@ function getStoredBoolean(key: string) {
 export default function GameBoard() {
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [deckStatus, setDeckStatus] = useState<DeckProps>();
+  const [expandMobileInterface, setExpandMobileInterface] = useState(false);
   const [finishGame, setFinishGame] = useState(false);
   const [message, setMessage] = useState(() =>
     getStoredString("messageStorage")
@@ -82,6 +86,20 @@ export default function GameBoard() {
 
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 1024) {
+        setExpandMobileInterface(false);
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   async function startGame() {
     try {
@@ -162,7 +180,7 @@ export default function GameBoard() {
   useEffect(() => {
     const deckFromLocalStorage = localStorage.getItem("blackjack-web");
     console.log(deckStatus?.remaining);
-    if (deckStatus?.remaining && deckStatus?.remaining <= 5) {
+    if (deckStatus?.remaining && deckStatus?.remaining <= 4) {
       setFinishGame(true);
     }
 
@@ -211,7 +229,12 @@ export default function GameBoard() {
     >
       {finishGame && (
         <PlayerWon
-          win={playerScore > computerScore ? "computer" : "player"}
+          win={
+            playerScore.reduce((curr, acc) => acc + curr, 0) <
+            computerScore.reduce((curr, acc) => acc + curr, 0)
+              ? "computer"
+              : "player"
+          }
           onClick={handleReset}
         />
       )}
@@ -221,9 +244,33 @@ export default function GameBoard() {
         </div>
       ) : (
         <>
-          <section className="scroll flex flex-col gap-8 w-[500px] min-w-[400px] p-4 h-full overflow-y-scroll">
+          <section
+            style={
+              expandMobileInterface
+                ? { backgroundImage: `url(${background.src})` }
+                : {}
+            }
+            className={`scroll lg:flex flex-col gap-8 sm:w-[500px] sm:min-w-[400px] p-4 h-full overflow-y-scroll overflow-x-hidden ${
+              expandMobileInterface
+                ? "fixed w-screen h-screen top-0 left-0 flex z-30 items-center"
+                : "hidden"
+            }`}
+          >
+            {expandMobileInterface && (
+              <div
+                onClick={() => setExpandMobileInterface(false)}
+                className="flex items-center gap-1 fixed bottom-4 right-4 z-50"
+              >
+                <Button
+                  variant="secondary"
+                  rightIcon={<GiContract size={20} />}
+                >
+                  Ver menos
+                </Button>
+              </div>
+            )}
             <Piles discardCards={discardCards} deckStatus={deckStatus} />
-            <div className="flex flex-col items-center w-full h-full gap-4 justify-end">
+            <div className="flex flex-col lg:w-full w-[350px] sm:w-[400px] items-center h-full gap-4 justify-end">
               <ScoreBoard
                 playerScore={playerScore}
                 computerScore={computerScore}
@@ -246,15 +293,36 @@ export default function GameBoard() {
               </div>
             </div>
           </section>
-          <section className="flex flex-col justify-center items-center p-4 h-full w-full">
-            {!gameIsRunning ? (
+          <section
+            style={
+              !gameIsRunning
+                ? { backgroundImage: `url(${backgroundCards.src})` }
+                : {}
+            }
+            className={`relative flex flex-col justify-center items-center p-4 h-full w-full ${
+              !gameIsRunning && "bg-cover bg-no-repeat bg-center"
+            }`}
+          >
+            <div className="fixed bottom-4 right-4 lg:hidden flex">
               <Button
-                leftIcon={<CiPlay1 />}
+                onClick={() => setExpandMobileInterface(true)}
                 variant="secondary"
-                onClick={startGame}
+                rightIcon={<BiExpand size={20} />}
               >
-                Iniciar Jogo
+                Ver mais
               </Button>
+            </div>
+            {!gameIsRunning ? (
+              <div className="absolute h-full w-full flex items-center justify-center backdrop-blur-[2px]">
+                <Button
+                  style={{ scale: "1.2" }}
+                  leftIcon={<CiPlay1 />}
+                  variant="secondary"
+                  onClick={startGame}
+                >
+                  Iniciar Jogo
+                </Button>
+              </div>
             ) : (
               <Table
                 deckId={deckStatus?.deck_id}

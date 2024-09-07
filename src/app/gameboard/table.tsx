@@ -51,6 +51,7 @@ export default function Table({
   const [scoreAlreadyApply, setScoreAlreadyApply] = useState(true);
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const [isConfetti, setIsConfetti] = useState(false);
+  const [standIsPlaying, setStandIsPlaying] = useState(false);
 
   const computerSum = UseSumCardValues({
     array: computerCards?.map((card) => card.value) || [],
@@ -98,10 +99,26 @@ export default function Table({
 
       setScoreAlreadyApply(false);
       setButtonDisabled(true);
+      setStandIsPlaying(true);
 
       // Cria uma cópia das cartas do computador para trabalhar localmente
       let updatedComputerCards = [...computerCards];
       let currentComputerSum = computerSum;
+
+      if (currentComputerSum > playerSum) {
+        const doubleDownMult = isDoubleDown ? 2 : 1;
+        setScoreAlreadyApply(true);
+        setStandIsPlaying(false);
+        setMessage(
+          `${isDoubleDown ? "(DOUBLE DOWN) " : ""}Oponente ganhou | ${
+            (computerSum - playerSum) * doubleDownMult
+          } pontos!`
+        );
+        setComputerScore([
+          ...computerScore,
+          (computerSum - playerSum) * doubleDownMult,
+        ]);
+      }
 
       // O computador continuará comprando cartas até ter mais pontos que o jogador ou passar de 21
       while (currentComputerSum <= playerSum && currentComputerSum < 21) {
@@ -142,10 +159,13 @@ export default function Table({
     }
   }
 
-  function handleDoubleDown() {
+  async function handleDoubleDown() {
+    setStandIsPlaying(false);
     setIsDoubleDown(true);
-    handleHit();
-    handleStand();
+    await handleHit();
+    setTimeout(() => {
+      handleStand();
+    }, 1000);
   }
 
   async function handleNewTable() {
@@ -156,15 +176,13 @@ export default function Table({
 
       setIsDoubleDown(false);
       setButtonDisabled(false);
+      setStandIsPlaying(false);
 
       setDiscardCards([
         ...discardCards,
         ...computerCards.map((card: CardProps) => card.code),
         ...playerCards.map((card: CardProps) => card.code),
       ]);
-
-      // await DeckRepositorie.returnCardsInPile(deckId, "player");
-      // await DeckRepositorie.returnCardsInPile(deckId, "computer");
 
       const responseDrawCards = await DeckRepositorie.drawCard(deckId, 3);
 
@@ -232,9 +250,10 @@ export default function Table({
       ]);
     }
 
-    if (computerSum > playerSum && computerSum <= 21) {
+    if (computerSum > playerSum && computerSum <= 21 && standIsPlaying) {
       const doubleDownMult = isDoubleDown ? 2 : 1;
       setScoreAlreadyApply(true);
+      setStandIsPlaying(false);
       setMessage(
         `${isDoubleDown ? "(DOUBLE DOWN) " : ""}Oponente ganhou | ${
           (computerSum - playerSum) * doubleDownMult
@@ -252,32 +271,35 @@ export default function Table({
       {isConfetti && <Confetti />}
       <section className="flex flex-col w-full gap-2">
         <label className="text-lg">Oponente | Soma: {computerSum}</label>
-        <div className="flex w-full justify-center">
-          {computerCards &&
-            computerCards.map((card, index) => (
-              <Fragment key={index}>
-                <div style={{ transform: `translateX(-${30 * index}px)` }}>
-                  <Image
-                    className="slideIn"
-                    src={card.image}
-                    width={130}
-                    height={180}
-                    alt="card"
-                  />
-                </div>
-                {computerCards.length === 1 && (
-                  <div style={{ transform: `translateX(-30px)` }}>
+        <div className="flex w-full justify-center overflow-x-scroll scroll">
+          <div className="flex max-w-[300px] sm:max-w-full">
+            {computerCards &&
+              computerCards.map((card, index) => (
+                <Fragment key={index}>
+                  <div style={{ transform: `translateX(-${30 * index}px)` }}>
                     <Image
+                      style={{ minHeight: 180, minWidth: 130 }}
                       className="slideIn"
-                      src={`https://deckofcardsapi.com/static/img/back.png`}
+                      src={card.image}
                       width={130}
                       height={180}
                       alt="card"
                     />
                   </div>
-                )}
-              </Fragment>
-            ))}
+                  {computerCards.length === 1 && (
+                    <div style={{ transform: `translateX(-30px)` }}>
+                      <Image
+                        className="slideIn"
+                        src={`https://deckofcardsapi.com/static/img/back.png`}
+                        width={130}
+                        height={180}
+                        alt="card"
+                      />
+                    </div>
+                  )}
+                </Fragment>
+              ))}
+          </div>
         </div>
       </section>
       <section className="flex gap-2">
@@ -320,22 +342,25 @@ export default function Table({
       </section>
       <section className="flex flex-col gap-2 w-full">
         <label className="text-lg">Jogador | Soma: {playerSum}</label>
-        <div className="flex w-full  justify-center">
-          {playerCards &&
-            playerCards.map((card, index) => (
-              <div
-                key={index}
-                style={{ transform: `translateX(-${30 * index}px)` }}
-              >
-                <Image
-                  className="slideIn"
-                  src={card.image}
-                  width={130}
-                  height={180}
-                  alt="card"
-                />
-              </div>
-            ))}
+        <div className="flex w-full justify-center overflow-x-scroll scroll">
+          <div className="flex max-w-[300px] sm:max-w-full">
+            {playerCards &&
+              playerCards.map((card, index) => (
+                <div
+                  key={index}
+                  style={{ transform: `translateX(-${30 * index}px)` }}
+                >
+                  <Image
+                    style={{ minHeight: 180, minWidth: 130 }}
+                    className="slideIn"
+                    src={card.image}
+                    width={130}
+                    height={180}
+                    alt="card"
+                  />
+                </div>
+              ))}
+          </div>
         </div>
       </section>
     </div>
