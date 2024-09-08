@@ -101,7 +101,6 @@ export default function Table({
       setButtonDisabled(true);
       setStandIsPlaying(true);
 
-      // Cria uma cópia das cartas do computador para trabalhar localmente
       let updatedComputerCards = [...computerCards];
       let currentComputerSum = computerSum;
 
@@ -120,26 +119,20 @@ export default function Table({
         ]);
       }
 
-      // O computador continuará comprando cartas até ter mais pontos que o jogador ou passar de 21
       while (currentComputerSum <= playerSum && currentComputerSum < 21) {
         const cardDrawed = await DeckRepositorie.drawCard(deckId, 1);
 
-        // Atualiza a lista local de cartas do computador
         updatedComputerCards = [...updatedComputerCards, cardDrawed.cards[0]];
 
-        // Atualiza a soma dos pontos com as cartas locais
         currentComputerSum = UseSumCardValues({
           array: updatedComputerCards.map((card) => card.value),
         });
 
-        // Atualiza o estado do React com as novas cartas
         setComputerCards(updatedComputerCards);
 
-        // Atualiza o status do deck
         const status = await DeckRepositorie.deckStatus(deckId);
         setDeckStatus(status);
 
-        // Salva o progresso no localStorage (opcional)
         const deckFromLocalStorage = localStorage.getItem("blackjack-web");
         if (deckFromLocalStorage) {
           const parsedDeck = JSON.parse(deckFromLocalStorage);

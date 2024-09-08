@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useState } from "react";
 import background from "../../../public/images/bg.png";
 import backgroundDoubleDown from "../../../public/images/bg-doubledown.png";
-import backgroundCards from "../../../public/images/bg-cards.png";
+import backgroundCards from "../../../public/images/bg-deck-v2.png";
 import DeckRepositorie from "@/services/DeckRepositorie";
 import Button from "@/components/button";
 import { CgCardSpades } from "react-icons/cg";
@@ -300,7 +300,8 @@ export default function GameBoard() {
                 : {}
             }
             className={`relative flex flex-col justify-center items-center p-4 h-full w-full ${
-              !gameIsRunning && "bg-cover bg-no-repeat bg-center"
+              !gameIsRunning &&
+              "bg-cover bg-no-repeat bg-center border-2 border-dashed border-secondary rounded-md"
             }`}
           >
             <div className="fixed bottom-4 right-4 lg:hidden flex">
